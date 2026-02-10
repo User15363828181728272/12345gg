@@ -26,7 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Updated navigation links per request
+  // Simplified and updated links
   const navLinks = [
     { name: 'Store', path: '/store' },
     { name: 'Guide', path: '/how-to-order' },
@@ -110,84 +110,65 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
 
               <button 
                 onClick={() => setMobileMenu(!mobileMenu)}
-                className="lg:hidden w-10 h-10 flex flex-col items-center justify-center space-y-1.5 glass-card rounded-xl border-white/10"
+                className="lg:hidden w-10 h-10 flex flex-col items-center justify-center glass-card rounded-xl border-white/10 relative z-[2001]"
               >
-                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
-                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'opacity-0' : 'opacity-100'}`}></span>
-                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                <div className="w-5 h-4 flex flex-col justify-between overflow-hidden">
+                   <span className={`h-0.5 w-full bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                   <span className={`h-0.5 w-full bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'translate-x-full opacity-0' : ''}`}></span>
+                   <span className={`h-0.5 w-full bg-white rounded-full transition-all duration-300 ${mobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                </div>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Improved Mobile Menu Overlay */}
+      {/* Modern Full-Screen Mobile Menu */}
       <div className={`fixed inset-0 z-[2000] transition-all duration-700 lg:hidden ${
-        mobileMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        mobileMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}>
         <div className="absolute inset-0 bg-black/95 backdrop-blur-3xl" onClick={() => setMobileMenu(false)}></div>
         
-        <div className={`absolute top-0 right-0 w-full md:w-[450px] h-full p-10 flex flex-col transition-transform duration-700 ease-expo transform ${
-          mobileMenu ? 'translate-x-0' : 'translate-x-full'
-        } bg-zinc-950/50 border-l border-white/5`}>
-          
-           <div className="flex items-center justify-between mt-4 mb-20">
-              <Link to="/" onClick={() => setMobileMenu(false)} className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center blue-glow">
-                  <i className="fas fa-bolt text-white text-xs"></i>
-                </div>
-                <span className="text-xs font-black uppercase tracking-[0.3em] text-white">Depstore</span>
-              </Link>
-              <button onClick={() => setMobileMenu(false)} className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-white/40">
-                <i className="fas fa-times"></i>
-              </button>
-           </div>
-
-           <div className="flex flex-col space-y-4">
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 ml-4 mb-2">Main Menu</p>
-             {navLinks.map((link, i) => (
-                <Link 
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileMenu(false)}
-                  className={`group flex items-center justify-between p-6 rounded-[2rem] glass-card border-white/5 transition-all duration-500 hover:bg-white/5 ${
-                    location.pathname === link.path ? 'border-blue-500/30 bg-blue-500/5' : ''
-                  }`}
-                  style={{ transitionDelay: `${i * 100}ms` }}
-                >
-                  <span className={`text-2xl font-black uppercase tracking-tighter ${
-                    location.pathname === link.path ? 'text-blue-500' : 'text-white'
-                  }`}>
-                    {link.name}
-                  </span>
-                  <i className={`fas fa-chevron-right text-[10px] transition-transform duration-500 group-hover:translate-x-2 ${
-                    location.pathname === link.path ? 'text-blue-500' : 'text-white/20'
-                  }`}></i>
-                </Link>
-             ))}
-           </div>
-
-           <div className="mt-auto space-y-4 pt-10 border-t border-white/5">
-              <a 
-                href={`https://wa.me/${CONTACT_WHATSAPP}`}
+        <div className={`absolute top-0 right-0 w-full h-full p-8 md:p-16 flex flex-col justify-center transition-transform duration-700 ease-expo transform ${
+          mobileMenu ? 'translate-y-0' : '-translate-y-full'
+        }`}>
+          <div className="flex flex-col space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 mb-10 text-center">Navigation</p>
+            {navLinks.map((link, i) => (
+              <Link 
+                key={link.path}
+                to={link.path}
                 onClick={() => setMobileMenu(false)}
-                className="flex items-center justify-between p-6 rounded-[2rem] bg-green-600 text-white shadow-[0_20px_40px_rgba(22,163,74,0.3)]"
+                className={`group flex flex-col items-center py-6 transition-all duration-500 ${
+                  location.pathname === link.path ? 'scale-110' : 'opacity-40 hover:opacity-100'
+                }`}
+                style={{ transitionDelay: `${i * 75}ms` }}
               >
-                <div className="flex items-center space-x-4">
-                  <i className="fab fa-whatsapp text-2xl"></i>
-                  <span className="text-lg font-black uppercase tracking-widest">Live Agent</span>
-                </div>
-                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-              </a>
-              
-              <div className="flex justify-between items-center px-6 py-2">
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20">© 2025 DEPSTORE CLOUD</p>
-                <div className="flex items-center space-x-2">
-                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                   <span className="text-[9px] font-black uppercase tracking-widest text-green-500">System Online</span>
-                </div>
-              </div>
-           </div>
+                <span className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${
+                  location.pathname === link.path ? 'text-white' : 'text-white/60'
+                }`}>
+                  {link.name}
+                </span>
+                <div className={`h-1 bg-blue-600 transition-all duration-500 ${
+                  location.pathname === link.path ? 'w-12 mt-4' : 'w-0 mt-0'
+                }`}></div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-20 flex flex-col items-center space-y-8 animate-reveal" style={{ animationDelay: '0.4s' }}>
+             <a 
+              href={`https://wa.me/${CONTACT_WHATSAPP}`}
+              className="px-12 py-5 bg-green-600 text-white rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl flex items-center space-x-4"
+             >
+                <i className="fab fa-whatsapp text-xl"></i>
+                <span>Live WhatsApp Support</span>
+             </a>
+             <div className="flex items-center space-x-4">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">System JKT-01 Online</p>
+             </div>
+          </div>
         </div>
       </div>
 

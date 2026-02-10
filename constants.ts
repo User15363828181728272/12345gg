@@ -18,18 +18,17 @@ export const TELEGRAM_CHAT_ID = "8412273544";
 export const SUPABASE_URL = "https://your-project-url.supabase.co";
 export const SUPABASE_ANON_KEY = "your-anon-key";
 
-// Initial state for fallback (Pterodactyl Spec C6R12)
 export const INITIAL_PACKAGES: Package[] = [
-  { id: "1gb", ram: 1, disk: 10, price: 500 },
+  { id: "1gb", ram: 1, disk: 10, price: 1000 },
   { id: "2gb", ram: 2, disk: 20, price: 3000 },
   { id: "3gb", ram: 3, disk: 30, price: 4500 },
   { id: "4gb", ram: 4, disk: 40, price: 6000 },
-  { id: "5gb", ram: 5, disk: 50, price: 7500, isTop: true },
-  { id: "6gb", ram: 6, disk: 60, price: 9000 },
-  { id: "7gb", ram: 7, disk: 70, price: 10500 },
-  { id: "8gb", ram: 8, disk: 80, price: 12000 },
-  { id: "9gb", ram: 9, disk: 90, price: 13500 },
-  { id: "10gb", ram: 10, disk: 100, price: 15000 },
+  { id: "5gb", ram: 5, disk: 50, price: 7000, isTop: true },
+  { id: "6gb", ram: 6, disk: 60, price: 8500 },
+  { id: "7gb", ram: 7, disk: 70, price: 9000 },
+  { id: "8gb", ram: 8, disk: 80, price: 10000, isTop: true },
+  { id: "9gb", ram: 9, disk: 90, price: 11500 },
+  { id: "10gb", ram: 10, disk: 100, price: 12000 },
 ];
 
 export const CONTACT_WHATSAPP = "628824244996";

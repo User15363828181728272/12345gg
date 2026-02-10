@@ -2,7 +2,7 @@
 import { PAYMENT_API_KEY } from '../constants';
 import { PaymentData } from '../types';
 
-// Relative path for Vercel proxy rewrite defined in vercel.json
+// Path relatif untuk rewrite proxy Vercel (mencegah CORS)
 const PAYMENT_PROXY_BASE = '/payment-api';
 
 export const createDeposit = async (amount: number): Promise<PaymentData> => {
@@ -27,27 +27,33 @@ export const createDeposit = async (amount: number): Promise<PaymentData> => {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      // Try to extract the specific error message from the API (e.g. "Minimum deposit 1000")
-      const errorMsg = data?.message || data?.msg || data?.error || `Error ${response.status}: Gagal menghubungi Gateway.`;
+      // Ambil pesan error asli dari Gateway (misal: "Min deposit 1000")
+      const errorMsg = data?.message || data?.msg || data?.error || `Gateway Error ${response.status}`;
       throw new Error(errorMsg);
     }
     
-    if (!data) {
-      throw new Error('API Gateway tidak memberikan respon data.');
-    }
+    if (!data) throw new Error('API Gateway tidak memberikan respon data.');
 
-    // Support both direct root keys and nested data object (common in many gateways)
+    // Mendukung data root langsung atau di dalam objek 'data'
     const source = data.data || data;
     
-    // Support various naming conventions (camelCase or snake_case)
-    const orderId = source.orderId || source.order_id || source.id || source.external_id;
-    const qrCodeUrl = source.qrCodeUrl || source.qr_link || source.qr_code || source.qr_url || source.qr_string;
-    const amountToPay = source.amountToPay || source.amount_to_pay || source.amount || amount;
+    // Pencarian kunci ID Order yang agresif
+    const orderId = source.order_id || source.orderId || source.id || source.external_id || source.ref_id;
+    
+    // Pencarian data QRIS (bisa berupa link gambar atau teks mentah 000201...)
+    const qrRaw = source.qr_string || source.qr_code || source.qr_link || source.qrCodeUrl || source.qr_url || source.qris_data || source.qris;
+    
+    const amountToPay = source.amount || source.amount_to_pay || source.amountToPay || amount;
 
-    if (!orderId || !qrCodeUrl) {
-      console.error("Invalid API Response Structure:", data);
-      throw new Error('Format data Gateway tidak sesuai (Missing ID/QR). Cek logs.');
+    if (!orderId || !qrRaw) {
+      console.error("DEBUG API Response:", data);
+      throw new Error('Gateway tidak mengirim data QRIS/ID. Periksa saldo atau limit API.');
     }
+
+    // Jika qrRaw adalah teks mentah QRIS (bukan URL), ubah jadi URL gambar menggunakan API generator
+    const qrCodeUrl = (typeof qrRaw === 'string' && qrRaw.startsWith('http')) 
+      ? qrRaw 
+      : `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(qrRaw)}`;
 
     return {
       orderId: String(orderId),
@@ -56,9 +62,7 @@ export const createDeposit = async (amount: number): Promise<PaymentData> => {
       status: 'pending'
     };
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      throw new Error('Gateway Timeout: Koneksi ke penyedia QRIS terlalu lambat.');
-    }
+    if (error.name === 'AbortError') throw new Error('Gateway Timeout (Koneksi lambat)');
     throw error;
   }
 };
@@ -69,7 +73,8 @@ export const checkStatus = async (orderId: string): Promise<string> => {
     if (!response.ok) return 'pending';
     const data = await response.json();
     const source = data.data || data;
-    return source.status || 'pending'; 
+    // Status umum: settlement, paid, success, Selesai
+    return source.status || source.payment_status || 'pending'; 
   } catch (e) {
     return 'pending';
   }

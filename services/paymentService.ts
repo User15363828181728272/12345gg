@@ -2,16 +2,14 @@
 import { PAYMENT_API_KEY } from '../constants';
 import { PaymentData } from '../types';
 
-// Relative path for Vercel proxy rewrite
+// Relative path for Vercel proxy rewrite defined in vercel.json
 const PAYMENT_PROXY_BASE = '/payment-api';
 
 export const createDeposit = async (amount: number): Promise<PaymentData> => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); 
+  const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
   try {
-    // Ensuring the endpoint follows: base_url/api/payment/deposit?apikey={key}
-    // Note: Query parameters should be passed exactly as needed by the destination.
     const url = `${PAYMENT_PROXY_BASE}/deposit?apikey=${PAYMENT_API_KEY}`;
     
     const response = await fetch(url, {
@@ -26,30 +24,41 @@ export const createDeposit = async (amount: number): Promise<PaymentData> => {
 
     clearTimeout(timeoutId);
 
+    const data = await response.json().catch(() => null);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const msg = errorData.message || `Error ${response.status}: Gagal memproses permintaan pembayaran ke gateway.`;
-      throw new Error(msg);
+      // Try to extract the specific error message from the API (e.g. "Minimum deposit 1000")
+      const errorMsg = data?.message || data?.msg || data?.error || `Error ${response.status}: Gagal menghubungi Gateway.`;
+      throw new Error(errorMsg);
     }
     
-    const data = await response.json();
+    if (!data) {
+      throw new Error('API Gateway tidak memberikan respon data.');
+    }
+
+    // Support both direct root keys and nested data object (common in many gateways)
+    const source = data.data || data;
     
-    // Validate response structure
-    if (!data.orderId || !data.qrCodeUrl) {
-      throw new Error('API Gateway mengembalikan format data yang tidak valid.');
+    // Support various naming conventions (camelCase or snake_case)
+    const orderId = source.orderId || source.order_id || source.id || source.external_id;
+    const qrCodeUrl = source.qrCodeUrl || source.qr_link || source.qr_code || source.qr_url || source.qr_string;
+    const amountToPay = source.amountToPay || source.amount_to_pay || source.amount || amount;
+
+    if (!orderId || !qrCodeUrl) {
+      console.error("Invalid API Response Structure:", data);
+      throw new Error('Format data Gateway tidak sesuai (Missing ID/QR). Cek logs.');
     }
 
     return {
-      orderId: data.orderId,
-      qrCodeUrl: data.qrCodeUrl,
-      amountToPay: data.amountToPay || amount,
+      orderId: String(orderId),
+      qrCodeUrl: qrCodeUrl,
+      amountToPay: Number(amountToPay),
       status: 'pending'
     };
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      throw new Error('Gateway Timeout: Koneksi ke penyedia QRIS memakan waktu terlalu lama. Silakan coba lagi.');
+      throw new Error('Gateway Timeout: Koneksi ke penyedia QRIS terlalu lambat.');
     }
-    // Propagate original error for OrderForm to display
     throw error;
   }
 };
@@ -59,7 +68,8 @@ export const checkStatus = async (orderId: string): Promise<string> => {
     const response = await fetch(`${PAYMENT_PROXY_BASE}/status/${orderId}?apikey=${PAYMENT_API_KEY}`);
     if (!response.ok) return 'pending';
     const data = await response.json();
-    return data.status || 'pending'; 
+    const source = data.data || data;
+    return source.status || 'pending'; 
   } catch (e) {
     return 'pending';
   }

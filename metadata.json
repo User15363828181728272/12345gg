@@ -1,0 +1,7 @@
+{
+  "name": "Depstore Cloud",
+  "description": "High-performance Pterodactyl hosting solution with automated QRIS payments and seamless server management.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

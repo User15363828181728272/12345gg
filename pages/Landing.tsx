@@ -42,7 +42,7 @@ const Landing: React.FC = () => {
           </div>
           
           <h1 className="text-6xl md:text-[8rem] lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white">
-            Infra <br className="hidden md:block"/> Reimagined.
+            depstore<br className="hidden md:block"/> Cloud.
           </h1>
           
           <div className="h-12 flex items-center justify-center">

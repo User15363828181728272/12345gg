@@ -20,7 +20,7 @@ export const SUPABASE_ANON_KEY = "your-anon-key";
 
 // Initial state for fallback (Pterodactyl Spec C6R12)
 export const INITIAL_PACKAGES: Package[] = [
-  { id: "1gb", ram: 1, disk: 10, price: 1500 },
+  { id: "1gb", ram: 1, disk: 10, price: 500 },
   { id: "2gb", ram: 2, disk: 20, price: 3000 },
   { id: "3gb", ram: 3, disk: 30, price: 4500 },
   { id: "4gb", ram: 4, disk: 40, price: 6000 },

@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depstore Cloud — Premium Infrastructure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg: #000000;
+            --fg: #ffffff;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+            transform: translateY(-5px);
+        }
+
+        .blue-glow {
+            box-shadow: 0 0 30px -5px var(--accent-glow);
+        }
+
+        .text-gradient {
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.4) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-premium {
+            background: var(--accent);
+            color: white;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px -10px var(--accent-glow);
+        }
+
+        .btn-premium:hover {
+            background: #1d4ed8;
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px -5px var(--accent-glow);
+        }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-reveal {
+            animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #444; }
+
+        input { background: rgba(255,255,255,0.03) !important; border: 1px solid rgba(255,255,255,0.05) !important; }
+        input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="custom-scrollbar">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

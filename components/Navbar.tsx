@@ -26,11 +26,13 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Updated navigation links per request
   const navLinks = [
     { name: 'Store', path: '/store' },
-    { name: 'Order Guide', path: '/how-to-order' },
-    { name: 'Discounts', path: '/discounts' },
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Guide', path: '/how-to-order' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'Terms', path: '/terms' },
+    { name: 'Privacy', path: '/privacy' },
   ];
 
   const handleCartCheckout = () => {
@@ -44,13 +46,21 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
     });
   };
 
+  useEffect(() => {
+    if (mobileMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [mobileMenu]);
+
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-700 ${
         scrolled ? 'py-4' : 'py-8'
       }`}>
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className={`flex items-center justify-between px-8 py-3 rounded-full border transition-all duration-700 ${
+          <div className={`flex items-center justify-between px-6 md:px-8 py-3 rounded-full border transition-all duration-700 ${
             scrolled 
             ? 'bg-black/60 backdrop-blur-3xl border-white/10 shadow-2xl' 
             : 'bg-transparent border-transparent'
@@ -62,7 +72,7 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
               <span className="text-xs font-black uppercase tracking-[0.3em] text-white">Depstore</span>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-10">
+            <div className="hidden lg:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <Link 
                   key={link.path}
@@ -74,17 +84,18 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                   {link.name}
                 </Link>
               ))}
+            </div>
+
+            <div className="flex items-center space-x-3 md:space-x-4">
               <a 
                 href={`https://wa.me/${CONTACT_WHATSAPP}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[9px] font-black uppercase tracking-[0.2em] transition-all text-green-500 hover:text-green-400"
+                className="hidden sm:flex px-6 py-2.5 glass-card rounded-full text-[9px] font-black uppercase tracking-widest text-green-500 hover:text-white hover:bg-green-600 border-green-500/20 transition-all"
               >
                 Live Agent
               </a>
-            </div>
 
-            <div className="flex items-center space-x-4">
               <button 
                 onClick={() => setCartOpen(true)}
                 className="relative w-10 h-10 rounded-full flex items-center justify-center glass-card hover:bg-white/10 transition-all border-white/5"
@@ -97,51 +108,86 @@ const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                 )}
               </button>
 
-              <Link 
-                to="/admin" 
-                className="hidden sm:flex px-6 py-2.5 glass-card rounded-full text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white border-white/5"
-              >
-                Admin
-              </Link>
-
               <button 
-                onClick={() => setMobileMenu(true)}
-                className="md:hidden flex flex-col space-y-1 w-5 items-end py-2"
+                onClick={() => setMobileMenu(!mobileMenu)}
+                className="lg:hidden w-10 h-10 flex flex-col items-center justify-center space-y-1.5 glass-card rounded-xl border-white/10"
               >
-                <span className="h-0.5 w-full bg-white rounded-full"></span>
-                <span className="h-0.5 w-3/4 bg-white rounded-full"></span>
+                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? 'opacity-0' : 'opacity-100'}`}></span>
+                <span className={`h-0.5 w-5 bg-white rounded-full transition-all duration-300 ${mobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className={`fixed inset-0 z-[2000] transition-all duration-500 md:hidden ${
+      {/* Improved Mobile Menu Overlay */}
+      <div className={`fixed inset-0 z-[2000] transition-all duration-700 lg:hidden ${
         mobileMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}>
-        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setMobileMenu(false)}></div>
-        <div className={`absolute top-0 right-0 w-[80%] h-full p-12 transition-transform duration-700 transform ${
+        <div className="absolute inset-0 bg-black/95 backdrop-blur-3xl" onClick={() => setMobileMenu(false)}></div>
+        
+        <div className={`absolute top-0 right-0 w-full md:w-[450px] h-full p-10 flex flex-col transition-transform duration-700 ease-expo transform ${
           mobileMenu ? 'translate-x-0' : 'translate-x-full'
-        } bg-zinc-950`}>
-           <div className="flex flex-col space-y-10 mt-20">
-             {navLinks.map((link) => (
+        } bg-zinc-950/50 border-l border-white/5`}>
+          
+           <div className="flex items-center justify-between mt-4 mb-20">
+              <Link to="/" onClick={() => setMobileMenu(false)} className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center blue-glow">
+                  <i className="fas fa-bolt text-white text-xs"></i>
+                </div>
+                <span className="text-xs font-black uppercase tracking-[0.3em] text-white">Depstore</span>
+              </Link>
+              <button onClick={() => setMobileMenu(false)} className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-white/40">
+                <i className="fas fa-times"></i>
+              </button>
+           </div>
+
+           <div className="flex flex-col space-y-4">
+             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 ml-4 mb-2">Main Menu</p>
+             {navLinks.map((link, i) => (
                 <Link 
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenu(false)}
-                  className="text-3xl font-black uppercase tracking-tighter text-white hover:text-blue-500 transition-colors"
+                  className={`group flex items-center justify-between p-6 rounded-[2rem] glass-card border-white/5 transition-all duration-500 hover:bg-white/5 ${
+                    location.pathname === link.path ? 'border-blue-500/30 bg-blue-500/5' : ''
+                  }`}
+                  style={{ transitionDelay: `${i * 100}ms` }}
                 >
-                  {link.name}
+                  <span className={`text-2xl font-black uppercase tracking-tighter ${
+                    location.pathname === link.path ? 'text-blue-500' : 'text-white'
+                  }`}>
+                    {link.name}
+                  </span>
+                  <i className={`fas fa-chevron-right text-[10px] transition-transform duration-500 group-hover:translate-x-2 ${
+                    location.pathname === link.path ? 'text-blue-500' : 'text-white/20'
+                  }`}></i>
                 </Link>
              ))}
-             <a 
-                href={`https://wa.me/${CONTACT_WHATSAPP}`}
-                className="text-3xl font-black uppercase tracking-tighter text-green-500 hover:text-green-400"
-              >
-                Live Agent
-              </a>
            </div>
-           <button onClick={() => setMobileMenu(false)} className="absolute top-8 right-8 text-xl opacity-30 text-white"><i className="fas fa-times"></i></button>
+
+           <div className="mt-auto space-y-4 pt-10 border-t border-white/5">
+              <a 
+                href={`https://wa.me/${CONTACT_WHATSAPP}`}
+                onClick={() => setMobileMenu(false)}
+                className="flex items-center justify-between p-6 rounded-[2rem] bg-green-600 text-white shadow-[0_20px_40px_rgba(22,163,74,0.3)]"
+              >
+                <div className="flex items-center space-x-4">
+                  <i className="fab fa-whatsapp text-2xl"></i>
+                  <span className="text-lg font-black uppercase tracking-widest">Live Agent</span>
+                </div>
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+              </a>
+              
+              <div className="flex justify-between items-center px-6 py-2">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20">© 2025 DEPSTORE CLOUD</p>
+                <div className="flex items-center space-x-2">
+                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                   <span className="text-[9px] font-black uppercase tracking-widest text-green-500">System Online</span>
+                </div>
+              </div>
+           </div>
         </div>
       </div>
 

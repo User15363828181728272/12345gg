@@ -53,7 +53,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
       setPaymentData(pData);
       setStep('payment');
     } catch (err: any) {
-      setError('Gagal memuat QRIS. Pastikan Anda sudah deploy ke Vercel untuk mengaktifkan proxy API.');
+      // Use the actual error message for better debugging
+      setError(err.message || 'Gagal memuat QRIS. Silakan coba lagi atau hubungi admin.');
     } finally {
       clearInterval(interval);
       setLoading(false);
@@ -174,7 +175,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
 
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
-                  <p className="text-red-500 text-[9px] md:text-[10px] font-black uppercase text-center leading-relaxed">{error}</p>
+                  <p className="text-red-500 text-[9px] md:text-[10px] font-black uppercase text-center leading-relaxed whitespace-pre-wrap">{error}</p>
                 </div>
               )}
 

@@ -32,12 +32,18 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
       setError('Nomor WhatsApp wajib diisi.');
       return;
     }
+
+    if (pkg.price < 1000) {
+      setError('API Gateway memerlukan minimal pembayaran Rp 1.000. Silakan pilih paket lain atau tambahkan item ke keranjang.');
+      return;
+    }
+
     setError('');
     setLoading(true);
     
     const statuses = [
       'Menghubungkan Gateway...',
-      'Mengamankan Koneksi...',
+      'Mengamankan Jalur...',
       'Generate Unik QRIS...',
       'Sinkronisasi Bank...'
     ];
@@ -53,8 +59,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
       setPaymentData(pData);
       setStep('payment');
     } catch (err: any) {
-      // Use the actual error message for better debugging
-      setError(err.message || 'Gagal memuat QRIS. Silakan coba lagi atau hubungi admin.');
+      // Use the actual error message from the API
+      setError(err.message || 'Gagal memuat QRIS. Gateway sibuk atau nominal tidak valid.');
     } finally {
       clearInterval(interval);
       setLoading(false);
@@ -69,7 +75,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
       interval = setInterval(async () => {
         try {
           const status = await checkStatus(paymentData.orderId);
-          if (status === 'settlement') {
+          if (status === 'settlement' || status === 'paid' || status === 'success') {
             clearInterval(interval);
             setStep('creating');
             await handleProvisioning();
@@ -79,7 +85,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
 
       helpTimer = setTimeout(() => {
         setShowHelp(true);
-      }, 45000); // Muncul setelah 45 detik
+      }, 45000); 
     }
 
     return () => {
@@ -90,30 +96,28 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
 
   const handleProvisioning = async () => {
     try {
-      // In a real app, you would loop through items if pkg.isCart is true
+      // Simulation of server creation
       setTimeout(() => {
         setStep('success');
         clearCart();
       }, 3000);
     } catch (err: any) {
-      setError('Gagal membuat server. Hubungi admin.');
+      setError('Gagal membuat server secara otomatis. Silakan chat Admin via WhatsApp.');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl overflow-y-auto">
+    <div className="fixed inset-0 z-[2005] flex items-center justify-center p-4 bg-black/90 backdrop-blur-3xl overflow-y-auto">
       <div className="absolute inset-0" onClick={step !== 'creating' && step !== 'success' && !loading ? onClose : undefined}></div>
       
       <div className="w-full max-w-xl bg-zinc-950 border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-12 relative shadow-[0_50px_100px_rgba(0,0,0,0.8)] animate-reveal my-auto">
         
-        {/* Close button for mobile */}
         {step !== 'creating' && step !== 'success' && !loading && (
-          <button onClick={onClose} className="absolute top-6 right-6 text-white/20 hover:text-white md:hidden">
+          <button onClick={onClose} className="absolute top-6 right-6 text-white/20 hover:text-white">
             <i className="fas fa-times text-xl"></i>
           </button>
         )}
 
-        {/* Progress Tracker */}
         <div className="flex justify-between mb-8 md:mb-10 px-2">
           {['Data', 'Bayar', 'Proses'].map((s, idx) => (
             <div key={s} className="flex flex-col items-center space-y-2">
@@ -133,7 +137,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
                 {pkg.isCart ? 'Checkout Keranjang.' : 'Checkout Instance.'}
               </h2>
               <p className="text-[9px] md:text-[10px] font-bold text-blue-500 uppercase tracking-[0.3em] mt-2">
-                {pkg.isCart ? `${items.length} Instances in Queue` : 'Private Infrastructure Instance'}
+                {pkg.isCart ? `${items.length} Nodes in Queue` : 'Private Isolated Instance'}
               </p>
             </header>
 
@@ -156,7 +160,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
                     required 
                     value={formData.whatsapp} 
                     onChange={e => setFormData({...formData, whatsapp: e.target.value})} 
-                    placeholder="628..." 
+                    placeholder="62812..." 
                     className="w-full bg-zinc-900 border border-white/5 focus:border-blue-500 rounded-2xl px-5 py-4 md:px-6 md:py-4 outline-none transition-all text-sm md:text-base font-bold text-white placeholder-white/10"
                   />
                 </div>
@@ -241,9 +245,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
                <i className="fas fa-check text-3xl md:text-4xl"></i>
             </div>
             <div className="space-y-2">
-              <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-white">Success.</h2>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-white text-gradient">Success.</h2>
               <p className="opacity-50 text-xs md:text-sm font-medium text-white px-4 md:px-6">
-                Pembayaran diverifikasi. Instance sedang dalam antrean pembuatan otomatis.
+                Pembayaran diverifikasi. Instance sedang dalam antrean pembuatan otomatis di panel console.
               </p>
             </div>
             <div className="flex flex-col gap-3 pt-4 md:pt-6">
@@ -251,7 +255,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ pkg, onClose }) => {
                 Buka Panel Console
               </a>
               <button onClick={onClose} className="w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition text-white">
-                Selesai
+                Kembali ke Beranda
               </button>
             </div>
           </div>

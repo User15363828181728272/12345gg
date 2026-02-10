@@ -1,0 +1,21 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/ptero-api/client/:path*",
+      "destination": "https://depstore11-private.shanydev.web.id/api/client/:path*"
+    },
+    {
+      "source": "/ptero-api/app/:path*",
+      "destination": "https://depstore11-private.shanydev.web.id/api/application/:path*"
+    },
+    {
+      "source": "/payment-api/:path*",
+      "destination": "https://blackhat.web.id/api/payment/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

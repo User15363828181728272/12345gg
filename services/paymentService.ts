@@ -11,9 +11,15 @@ export const createDeposit = async (amount: number): Promise<PaymentData> => {
 
   try {
     // Ensuring the endpoint follows: base_url/api/payment/deposit?apikey={key}
-    const response = await fetch(`${PAYMENT_PROXY_BASE}/deposit?apikey=${PAYMENT_API_KEY}`, {
+    // Note: Query parameters should be passed exactly as needed by the destination.
+    const url = `${PAYMENT_PROXY_BASE}/deposit?apikey=${PAYMENT_API_KEY}`;
+    
+    const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ amount }),
       signal: controller.signal
     });
@@ -22,28 +28,39 @@ export const createDeposit = async (amount: number): Promise<PaymentData> => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Gagal membuat permintaan pembayaran');
+      const msg = errorData.message || `Error ${response.status}: Gagal memproses permintaan pembayaran ke gateway.`;
+      throw new Error(msg);
     }
     
     const data = await response.json();
+    
+    // Validate response structure
+    if (!data.orderId || !data.qrCodeUrl) {
+      throw new Error('API Gateway mengembalikan format data yang tidak valid.');
+    }
+
     return {
       orderId: data.orderId,
       qrCodeUrl: data.qrCodeUrl,
-      amountToPay: data.amountToPay,
+      amountToPay: data.amountToPay || amount,
       status: 'pending'
     };
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      throw new Error('Gateway Timeout: Koneksi ke penyedia QRIS terlalu lama.');
+      throw new Error('Gateway Timeout: Koneksi ke penyedia QRIS memakan waktu terlalu lama. Silakan coba lagi.');
     }
+    // Propagate original error for OrderForm to display
     throw error;
   }
 };
 
 export const checkStatus = async (orderId: string): Promise<string> => {
-  const response = await fetch(`${PAYMENT_PROXY_BASE}/status/${orderId}?apikey=${PAYMENT_API_KEY}`);
-  if (!response.ok) throw new Error('Gagal mengecek status pembayaran');
-  
-  const data = await response.json();
-  return data.status; 
+  try {
+    const response = await fetch(`${PAYMENT_PROXY_BASE}/status/${orderId}?apikey=${PAYMENT_API_KEY}`);
+    if (!response.ok) return 'pending';
+    const data = await response.json();
+    return data.status || 'pending'; 
+  } catch (e) {
+    return 'pending';
+  }
 };

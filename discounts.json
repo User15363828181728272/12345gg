@@ -6,18 +6,6 @@
       "title": "PROMO RAM 5GB",
       "description": "Dapatkan RAM 5GB Premium hanya Rp 7.500 untuk 30 Hari pertama. Stok terbatas!",
       "badge": "Hot Deal"
-    },
-    {
-      "id": "bulk-save",
-      "title": "BULK SAVER",
-      "description": "Beli 5 RAM sekaligus dan dapatkan potongan harga otomatis di keranjang belanja.",
-      "badge": "Hemat"
-    },
-    {
-      "id": "new-user",
-      "title": "WELCOME CLOUD",
-      "description": "Gunakan kode 'PRIVATE' untuk potongan tambahan 10% pada semua paket RAM.",
-      "badge": "New"
     }
   ],
   "footerNote": "Semua diskon berlaku hingga akhir bulan ini atau selama persediaan node tersedia."

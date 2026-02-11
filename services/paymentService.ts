@@ -1,80 +1,62 @@
-
 import { PAYMENT_API_KEY } from '../constants';
 import { PaymentData } from '../types';
 
-// Path relatif untuk rewrite proxy Vercel (mencegah CORS)
 const PAYMENT_PROXY_BASE = '/payment-api';
 
 export const createDeposit = async (amount: number): Promise<PaymentData> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
   try {
     const url = `${PAYMENT_PROXY_BASE}/deposit?apikey=${PAYMENT_API_KEY}`;
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ amount }),
-      signal: controller.signal
+      body: JSON.stringify({ amount })
     });
 
-    clearTimeout(timeoutId);
+    const data = await response.json();
 
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      // Ambil pesan error asli dari Gateway (misal: "Min deposit 1000")
-      const errorMsg = data?.message || data?.msg || data?.error || `Gateway Error ${response.status}`;
-      throw new Error(errorMsg);
-    }
+    const result = data.data || data;
     
-    if (!data) throw new Error('API Gateway tidak memberikan respon data.');
-
-    // Mendukung data root langsung atau di dalam objek 'data'
-    const source = data.data || data;
-    
-    // Pencarian kunci ID Order yang agresif
-    const orderId = source.order_id || source.orderId || source.id || source.external_id || source.ref_id;
-    
-    // Pencarian data QRIS (bisa berupa link gambar atau teks mentah 000201...)
-    const qrRaw = source.qr_string || source.qr_code || source.qr_link || source.qrCodeUrl || source.qr_url || source.qris_data || source.qris;
-    
-    const amountToPay = source.amount || source.amount_to_pay || source.amountToPay || amount;
+    // Identifikas String data
+    const orderId = result.order_id || result.id || result.ref_id;
+    const qrRaw = result.qr_string || result.qr_code || result.qr || result.qris;
+    const finalAmount = result.amount || result.amount_to_pay || amount;
 
     if (!orderId || !qrRaw) {
-      console.error("DEBUG API Response:", data);
-      throw new Error('Gateway tidak mengirim data QRIS/ID. Periksa saldo atau limit API.');
+      throw new Error(data.message || 'Gagal mendapatkan QRIS. Silahkan melakukan pembelian manual.');
     }
 
-    // Jika qrRaw adalah teks mentah QRIS (bukan URL), ubah jadi URL gambar menggunakan API generator
-    const qrCodeUrl = (typeof qrRaw === 'string' && qrRaw.startsWith('http')) 
+    const qrCodeUrl = String(qrRaw).startsWith('http') 
       ? qrRaw 
-      : `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(qrRaw)}`;
+      : `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(qrRaw)}`;
 
     return {
       orderId: String(orderId),
       qrCodeUrl: qrCodeUrl,
-      amountToPay: Number(amountToPay),
+      amountToPay: Number(finalAmount),
       status: 'pending'
     };
   } catch (error: any) {
-    if (error.name === 'AbortError') throw new Error('Gateway Timeout (Koneksi lambat)');
-    throw error;
+    console.error('Payment Service Error:', error);
+    throw new Error(error.message || 'Koneksi ke Gateway gagal.');
   }
 };
 
+/**
+    cek status pembayaran 
+ */
 export const checkStatus = async (orderId: string): Promise<string> => {
   try {
-    const response = await fetch(`${PAYMENT_PROXY_BASE}/status/${orderId}?apikey=${PAYMENT_API_KEY}`);
+    const url = `${PAYMENT_PROXY_BASE}/status/${orderId}?apikey=${PAYMENT_API_KEY}`;
+    const response = await fetch(url);
     if (!response.ok) return 'pending';
+    
     const data = await response.json();
-    const source = data.data || data;
-    // Status umum: settlement, paid, success, Selesai
-    return source.status || source.payment_status || 'pending'; 
+    const result = data.data || data;
+    
+    return String(result.status || result.payment_status || 'pending').toLowerCase();
   } catch (e) {
     return 'pending';
   }

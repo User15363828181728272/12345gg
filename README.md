@@ -1,4 +1,4 @@
-# Depstore Cloud — Premium Private Infrastructure
+# Depstore Cloud - Premium Private Infrastructure
 
 Depstore Cloud adalah platform penyedia infrastruktur RAM terisolasi (private instance) yang dirancang khusus untuk kebutuhan bot performa tinggi (WhatsApp, Telegram, Discord).
 
